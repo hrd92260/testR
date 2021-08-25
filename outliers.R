@@ -32,7 +32,7 @@ summary(simple_regression)
 #      Performance measures
 #                 Residual standard error: Smaller is better (it is the standard variation of the residuals)
 #                 R-square: the bigger the better. It is the percentage of the response variable variation that is explained by a linear model. The adusted R-square takes into consideration the number of variable. 
-#                 F-Statistic (F-test): the p-value has to be significantly (greater than 0.05), if not it means the model is not relevant. This figure checks if least one variable's weight is significiantly different than zero.
+#                 F-Statistic (F-test): the p-value has to be lower than 0.05), if not it means the model is not relevant. This figure checks if least one variable's weight is significiantly different than zero.
 
 
 #### We can also use lm() for x1, x2 and x3 simultanenously (multiple regression)
