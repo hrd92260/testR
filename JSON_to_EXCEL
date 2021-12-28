@@ -1,0 +1,49 @@
+setwd("C:\\Users\\hugor\\Desktop\\workplace")
+
+library(rjson)
+json_file <- fromJSON(file="bajrangi.json")
+json_file
+
+library(tibble)
+data_raw <- enframe(unlist(json_file))
+
+library(tidyr)
+data_raw %>% separate (name, into = 
+    c(paste0("x", 1:10)), fill="right")
+
+library(purrr)
+library(stringr)
+library(dplyr)
+
+rgx_split <- "\\."
+n_cols_max <- 
+  data_raw %>%
+  pull(name) %>%
+  str_split(rgx_split) %>%
+  map_dbl(~length(.)) %>%
+  max()
+
+n_cols_max
+
+data_short<- paste0("name", 1:n_cols_max)
+
+data_short <- 
+  data_raw %>% 
+  separate(name, into=data_short, sep=rgx_split, fill="right")
+
+library(readr)
+data_pivot <- 
+  data_short %>% pivot_wider(names_from = name3),
+  values_from = c(value)
+
+data_duplicates <- data_short %>%
+  group_by(name2, name3) %>%
+  mutate(obs=row_number())
+
+data_duplicates
+
+data_final <- pivot_wider(data_duplicates, names_from="name3", values_from="value")
+data_final
+
+library("writexl")
+write_xlsx(data_final,"C:\\Users\\hugor\\Desktop\\workplace\\bajrangi.xlsx")
