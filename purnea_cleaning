@@ -1,0 +1,264 @@
+# Library
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(tidyverse)
+library(table1)
+
+# Nettoyer le bureau
+rm(list = ls())
+
+# Télécharger le dataset
+dataset <- read_excel("C:/Users/hugor/OneDrive/PhD/Project - PhD/Data/Dataset_25042022_T-Test.xlsx")
+
+################ J'aimerais savoir si les variations en amitiés, confiance en soi et normes sociales sont statistiquement significantes
+
+
+
+
+
+
+
+
+
+#### T-Test ####
+#### Le t-test ne peut marcher ici que pour le gender, car un t-test peut comparer uniquement 2 catégories (là, hommes et femmes) 
+
+# Je vérifie que je n'ai que deux catégories
+table(dataset$gender)
+
+## Je fais le t-test
+t.test(dataset$friendship_index~dataset$gender)
+
+## Interpretation
+# From the output table, we can see: 
+# I) the difference in means for our sample data is -3.25 (6.438 – 9.686), 
+# II) The confidence interval shows that the true difference in means is between -4.216 and -2.281. 
+# Meaning: 95% of the time, the true difference in means will be different from 0. 
+# III) Our p-value of 1.026e-10 is much smaller than 0.05
+# Meaning: we can reject the null hypothesis of no difference and say with a high degree of confidence that the true difference in means is not equal to zero.
+
+#### How to present the result?
+# When reporting your t-test results, the most important values to include are:
+# (1) the t-value, (2) the p-value, (3)the df and the (3) the standard variation. 
+# These will communicate to your audience whether the difference between the two groups is statistically significant (a.k.a. that it is unlikely to have happened by chance).
+
+## What is DF?
+# The degrees of freedom: 524.7. 
+# Degrees of freedom is related to your sample size
+# it shows how many ‘free’ data points are available in your test for making comparisons. 
+# The greater the degrees of freedom, the better your statistical test will work.
+
+## How do we get the standard deviation(SD)
+dataset %>%
+group_by(gender) %>%
+summarize(mean_length = mean(friendship_index),
+            sd_length = sd(friendship_index))
+
+# What does it mean?
+# Standard deviation tells you how spread out the data is.
+######## ? ####### Is a SD of 5.95 is too much?
+
+## To summarize, this how we should present the results of the t-test: 
+# The difference in friendship weight between women (Mean = 6.44; SD = 5.94) 
+# and men (Mean = 9.67; SD = 5.35) 
+# was significant (t (525) = -6.577; p = 1.162e-10).
+
+
+
+
+
+
+#### Anova test ####
+
+confidence.aov <- aov(confidence_index ~ friendship_index, data = dataset)
+
+# main output: 
+summary(confidence.aov)
+
+# all output: 
+str(confidence.aov)
+
+# coefficients: 
+confidence.aov$coefficients
+
+# diagnostic plots: 
+plot(confidence.aov)
+
+
+
+
+#### Linear Regression ####
+
+##########!!!!!!!!!!!###########""
+## DO THE SAME BUT ONLY FOR WOMEN
+
+##########!!!!!!!!!!!###########""
+## DO THE SAME BUT BY REMOVING N/A
+
+
+
+# simple_regression=lm(y~x1, data=dataset)
+# This will tell us the coefficients for the regression model y=(a*x1)+b
+# In other words:
+# We are looking to build a model in the form of y=(a*x1)+b, 
+# where b is the intercept and x1 is the slope of the line.
+
+
+## LM1: friendship x confidence
+regression_confidence_index=lm(confidence_index~friendship_index, data=dataset)
+summary(regression_confidence_index)
+
+
+##########  How to interpret?
+
+# Residuals
+# Summarises the error between the prediction of the model [y=(ax1)+b] and the actual results. Smaller residuals are better.
+
+# Coefficients
+# Our model is: confidence_index =(friendship_index * 0.11) + 7.5
+# t-value: if it is close to zero, it means the coefficient isn't adding anything to the model (=not very significant)
+# Residual standard error: Smaller is better (it is the standard variation of the residuals)
+  # For our current model, we can see that on average, the actual values of confidence levels are 2.67 points away from the predicted values (regression line). 
+  # Understanding our dataset, and knowing that the largest confidence index is 13, having all our predictions be off on average by 2.27 won’t produce an extremely accurate mode (check how bad this is).
+# R-square: the bigger the better. It is the percentage of the response variable variation that is explained by a linear model. The adjusted R-square takes into consideration the number of variable. 
+  # The Multiple R-squared value is most often used for simple linear regression (one predictor). 
+  # It tells us what percentage of the variation within our dependent variable that the independent variable is explaining. 
+  # In other words, it’s another method to determine how well our model is fitting the data. 
+  # Here, friendship explains ~5.57% of the variation within confidence, our dependent variable. 
+  # Ultimately, our model isn’t fitting the data very well (we saw this when looking at the residual standard error)
+# F-Statistic (F-test): the p-value has to be lower than 0.05, if not it means the model is not relevant.
+
+# Possible interpretation
+# While the weight of friendship is helpful information to know when trying to predict confidence level, we can conclude that, alone, it is not enough to produce an accurate prediction.
+
+
+regression_fear=lm(fear~friendship_index, data=dataset)
+summary(regression_fear)
+
+regression_dosti=lm(dosti~friendship_index, data=dataset)
+summary(regression_dosti)
+
+regression_mind=lm(mind~friendship_index, data=dataset)
+summary(regression_mind)
+
+regression_esteem=lm(esteem~friendship_index, data=dataset)
+summary(regression_esteem)
+
+
+## LM1: friendship x norms
+regression_norms=lm(norms_index~friendship_index, data=dataset)
+summary(regression_norms)
+
+regression_saheli=lm(saheli~friendship_index, data=dataset)
+summary(regression_saheli)
+
+regression_work_outside=lm(work_outside~friendship_index, data=dataset)
+summary(regression_work_outside)
+
+regression_abilities=lm(abilities~friendship_index, data=dataset)
+summary(regression_abilities)
+
+regression_beating=lm(beating~friendship_index, data=dataset)
+summary(regression_beating)
+
+regression_wedding=lm(wedding=~friendship_index, data=dataset)
+summary(regression_wedding)
+
+regression_friend_caste=lm(friend_caste~friendship_index, data=dataset)
+summary(regression_friend_caste)
+
+
+
+
+############# aov()           ANCOVA
+####### aov_model1<-aov(well~drunk*drink,data=alcohol_dataset)
+########### aov_model2<-aov(well~drunk+drink,data=alcohol_dataset)
+
+
+
+
+
+
+
+####### VISUALISATION #########"
+
+
+### TABS ####
+
+table1(~ friendship_index + impact + money + job + info + hausla + outside | gender, dataset)
+
+# Labelling
+label(dataset$friendship_index)       <- "Friendship index"
+label(dataset$impact)       <- "Overall impact of friendship in life"
+label(dataset$money)     <- "Likeliness to get money from friends"
+label(dataset$job) <- "Likeliness to get job from friends"
+label(dataset$info) <- "Likeliness to receive important information from friends"
+label(dataset$hausla) <- "Likeliness to get inspiration/motivation from friends"
+label(dataset$outside) <- "Likeliness to know more about the outside world from friends"
+
+table1(~ friendship_index + impact + money + job + info + hausla + outside  | gender, data=dataset, overall="Total")
+
+# Customizing content appearance
+  # We specify render functions for the continuous and categorical variables as follows:
+
+my.render.cont <- function(x) {
+  with(stats.apply.rounding(stats.default(x), digits=2), 
+       c("","Mean (SD)"=sprintf("%s (&plusmn; %s)", MEAN, SD)))
+}
+my.render.cat <- function(x) {
+  c("", sapply(stats.default(x), function(y) with(y,sprintf("%d (%0.0f %%)", FREQ, PCT))))
+}
+
+table1(~ friendship_index + impact + money + job + info + hausla + outside  | gender, data=dataset, overall="Total",
+       render.continuous=my.render.cont, render.categorical=my.render.cat)
+
+
+### Plots ####
+
+
+ggplot(data=dataset, aes(x=friendship_index))+
+  geom_bar()
+
+ggplot(data=dataset, 
+       aes(x=confidence_index, y=friendship_index))+
+  geom_point()
+
+
+ggplot(data=dataset, aes(x=confidence_index, y=friendship_index))+
+  geom_smooth(method="lm")
+ggplot(data=dataset, aes(x=norms_index, y=friendship_index))+
+  geom_smooth(method="lm")
+
+
+ggplot(data=dataset, aes(x=confidence_index, y=friendship_index))+
+  geom_smooth(method="loess")
+ggplot(data=dataset, aes(x=norms_index, y=friendship_index))+
+  geom_smooth(method="loess")
+
+
+ggplot(data=dataset, aes(x=confidence_index, y=friendship_index))+
+  geom_point()+
+  geom_smooth(method="lm", col="red")
+
+ggplot(data=dataset, aes(x=norms_index, y=friendship_index))+
+  geom_point()+
+  geom_smooth(method="lm", col="green")
+
+
+#### AGGREGATE par valeur, pour avoir le graph par moyenne de chaque grade de l'index
+
+#### CHECK DIAGRAMME DE FREQUENCE
+
+
+# BOX PLOTS
+
+ggplot(data=dataset, aes(x=gender, y=friendship_index))+
+  geom_boxplot()
+
+ggplot(data=dataset, aes(x=gender, y=confidence_index))+
+  geom_boxplot()
+
+ggplot(data=dataset, aes(x=gender, y=norms_index))+
+  geom_boxplot()
+
